@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/golang/Dockerfile
+      target: dev
+    container_name: devlocator
+    volumes:
+      - .:/go/src/app
+    ports:
+      - "8000:8000"
+  
+  db:
+    image: mysql:8.1.0
+    container_name: devrocator-db
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    ports:
+      - 3306:3306
