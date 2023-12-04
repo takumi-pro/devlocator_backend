@@ -1,0 +1,75 @@
+openapi: 3.1.0
+x-stoplight:
+  id: hr0df8wfcjc5p
+info:
+  title: devlocator
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /api/events:
+    get:
+      summary: search event
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/search-event'
+      operationId: get-api-event
+      x-stoplight:
+        id: oo30hfbohwji8
+      parameters:
+        - $ref: '#/components/parameters/connpass_event_id'
+        - $ref: '#/components/parameters/connpass_keyword_or'
+        - $ref: '#/components/parameters/connpass_keyword_and'
+        - $ref: '#/components/parameters/connpass_limit'
+        - schema:
+            type: string
+          in: header
+    parameters: []
+components:
+  schemas: {}
+  parameters:
+    connpass_event_id:
+      name: event_id
+      in: query
+      required: false
+      schema:
+        type: string
+      description: イベント毎に割り当てられた番号
+    connpass_keyword_or:
+      name: keyword_or
+      in: query
+      required: false
+      schema:
+        type: string
+      description: イベントのタイトル、キャッチ、概要、住所をOR条件部分一致で検索
+    connpass_keyword_and:
+      name: keyword_and
+      in: query
+      required: false
+      schema:
+        type: string
+      description: イベントのタイトル、キャッチ、概要、住所をAND条件部分一致で検索
+    connpass_limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: string
+      description: 検索結果の最大出力データ数を指定
+  responses:
+    search-event:
+      description: search event response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              results_returned:
+                type: number
+                x-stoplight:
+                  id: zazrhglsrza1z
+                description: 含まれる検索結果の件数
+            required:
+              - results_returned
+      headers: {}
