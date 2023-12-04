@@ -15,7 +15,7 @@ jobs:
       - name: Convert YML to HTML
         run: |
           npm install -g redoc-cli
-          redoc-cli bundle reference/devlocator.yaml -o ./docs/index.html
+          redoc-cli bundle reference/devlocator.yaml -o ./index.html
 
       - name: Deploy to Hosting PC
         uses: appleboy/scp-action@v0.1.4
@@ -26,5 +26,5 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          source: "docs/index.html"
+          source: "index.html"
           target: "/var/www/html/api"
