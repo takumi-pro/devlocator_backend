@@ -2,10 +2,6 @@ name: API Document Hosting
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - /reference
   workflow_dispatch:
 
 jobs:
@@ -28,5 +24,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
           source: "docs/index.html"
           target: "/var/www/html/api"
