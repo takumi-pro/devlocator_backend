@@ -2,10 +2,6 @@ name: API Document Hosting
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - /reference
   workflow_dispatch:
 
 jobs:
@@ -19,7 +15,7 @@ jobs:
       - name: Convert YML to HTML
         run: |
           npm install -g redoc-cli
-          redoc-cli bundle reference/devlocator.yaml -o ./docs/index.html
+          redoc-cli bundle reference/devlocator.yaml -o ./index.html
 
       - name: Deploy to Hosting PC
         uses: appleboy/scp-action@v0.1.4
@@ -28,5 +24,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: "docs/index.html"
+          key: ${{ secrets.KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          source: "index.html"
           target: "/var/www/html/api"
