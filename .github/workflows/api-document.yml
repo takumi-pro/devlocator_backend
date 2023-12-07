@@ -3,6 +3,8 @@ name: API Document Hosting
 on:
   pull_request:
     branches: main
+    paths:
+      - "reference/devlocator.yaml"
   workflow_dispatch:
 
 jobs:
