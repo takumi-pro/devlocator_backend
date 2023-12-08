@@ -48,3 +48,4 @@ go.work
 .env
 tmp/
 mysql-data
+output
