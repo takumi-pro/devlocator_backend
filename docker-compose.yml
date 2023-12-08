@@ -13,11 +13,11 @@ services:
   
   db:
     image: mysql:8.1.0
-    container_name: devrocator-db
+    container_name: devlocator-db
     volumes:
       - ./mysql-data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
     ports:
-      - 3306:3306
+      - 3307:3306

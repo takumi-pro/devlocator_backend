@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  spy:
+    build:
+      context: .
+      dockerfile: ./docker/schemaspy/Dockerfile
+    image: schemaspy/schemaspy
+    container_name: spy
+    tty: true
+    volumes:
+      - ./output:/output
+      - ./schemaspy.properties:/schemaspy.properties
+      - ./drivers/mysql-connector-j-8.1.0.jar:/drivers/mysql.jar
+    command: "java -jar schemaspy.jar"
+
+  nginx_schemaspy:
+    image: nginx
+    container_name: "nginx_schemaspy"
+    depends_on:
+      - spy
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./output:/usr/share/nginx/html
+      - ./docker/schemaspy/default.conf:/etc/nginx/conf.d/default.conf
