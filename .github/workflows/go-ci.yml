@@ -2,18 +2,18 @@ name: go-ci
 on:
   pull_request:
     branches: [main]
-      paths:
-        - '**.go'
-        - 'go.mod'
-        - 'go.sum'
-        - '.github/workflows/**'
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/**'
   push:
     branches: [main]
-      paths:
-        - '**.go'
-        - 'go.mod'
-        - 'go.sum'
-        - '.github/workflows/**'
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/**'
 
 permissions:
   contents: read
