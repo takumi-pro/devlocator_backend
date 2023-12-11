@@ -4,72 +4,540 @@ x-stoplight:
 info:
   title: devlocator
   version: '1.0'
+  summary: devlocatorのバックエンドAPI仕様書
 servers:
-  - url: 'http://localhost:3000'
+  - url: 'http://localhost:8080'
+    description: devlocator-api
 paths:
   /api/events:
     get:
-      summary: search event
-      tags: []
+      summary: search events
       responses:
         '200':
-          $ref: '#/components/responses/search-event'
+          $ref: '#/components/responses/search_event'
+        '400':
+          $ref: '#/components/responses/400_bad_request'
+        '401':
+          $ref: '#/components/responses/401_unauthorized'
+        '403':
+          $ref: '#/components/responses/403_forbidden'
+        '404':
+          $ref: '#/components/responses/404_not_found'
+        '500':
+          $ref: '#/components/responses/500_internal_server_error'
       operationId: get-api-event
       x-stoplight:
         id: oo30hfbohwji8
       parameters:
-        - $ref: '#/components/parameters/connpass_event_id'
-        - $ref: '#/components/parameters/connpass_keyword_or'
-        - $ref: '#/components/parameters/connpass_keyword_and'
-        - $ref: '#/components/parameters/connpass_limit'
+        - $ref: '#/components/parameters/event_id'
+        - $ref: '#/components/parameters/keyword'
+        - $ref: '#/components/parameters/search_method'
+        - $ref: '#/components/parameters/date'
+      description: イベント検索
+      tags:
+        - event
+    parameters: []
+  /api/mypage:
+    get:
+      summary: get mypage
+      tags:
+        - mypage
+      responses:
+        '200':
+          $ref: '#/components/responses/mypage'
+        '400':
+          $ref: '#/components/responses/400_bad_request'
+        '401':
+          $ref: '#/components/responses/401_unauthorized'
+        '403':
+          $ref: '#/components/responses/403_forbidden'
+        '404':
+          $ref: '#/components/responses/404_not_found'
+        '500':
+          $ref: '#/components/responses/500_internal_server_error'
+      operationId: get-api-mypage
+      x-stoplight:
+        id: kjqzfzxfwkdcb
+      description: マイページ情報の取得
+      security:
+        - bearer: []
+      parameters:
         - schema:
             type: string
           in: header
-    parameters: []
+          name: Authorization
+          description: Bearerトークンを受け取る
+  /api/event/bookmark:
+    put:
+      summary: bookmark
+      operationId: put-api-event-bookmark
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/400_bad_request'
+        '401':
+          $ref: '#/components/responses/401_unauthorized'
+        '403':
+          $ref: '#/components/responses/403_forbidden'
+        '404':
+          $ref: '#/components/responses/404_not_found'
+        '500':
+          $ref: '#/components/responses/500_internal_server_error'
+      x-stoplight:
+        id: eiyhov2ge03d4
+      description: イベントのブックマーク
+      security:
+        - bearer: []
+      requestBody:
+        $ref: '#/components/requestBodies/bookmark'
+      tags:
+        - event
 components:
-  schemas: {}
+  schemas:
+    Event:
+      title: Event
+      x-stoplight:
+        id: llyteyl0xngq6
+      type: object
+      description: イベントモデル
+      properties:
+        id:
+          type: string
+          x-stoplight:
+            id: l7imglwf1eg6t
+          format: uuid
+          description: uuid
+        eventId:
+          type: integer
+          x-stoplight:
+            id: e4zoht3b7ovwf
+          description: イベントID
+        title:
+          type: string
+          x-stoplight:
+            id: 9073cydljautx
+          description: イベントタイトル
+        catch:
+          type: string
+          x-stoplight:
+            id: z3lt9rz1131uk
+          description: キャッチ
+        description:
+          type: string
+          x-stoplight:
+            id: oukcdkd6hkjb6
+          description: 概要
+        eventUrl:
+          type: string
+          x-stoplight:
+            id: 2k4ujl9l9g4fb
+          description: イベントURL
+        startedAt:
+          type: string
+          x-stoplight:
+            id: fuy8q0uanotga
+          format: date-time
+          description: イベント開催日時
+        endedAt:
+          type: string
+          x-stoplight:
+            id: u5jy8v7b13kwj
+          format: date-time
+          description: イベント終了日時
+        limit:
+          type: integer
+          x-stoplight:
+            id: bkevt3qv40vj0
+          description: 定員
+        eventType:
+          type: string
+          x-stoplight:
+            id: c5eo0uqmmdye8
+          description: |-
+            イベント参加タイプ
+            participation: connpassで参加受付あり
+            advertisement: 告知のみ
+        series:
+          type: object
+          x-stoplight:
+            id: e1sjt6awos11x
+          description: グループ
+          properties:
+            id:
+              type: integer
+              x-stoplight:
+                id: 8faw07eqplccf
+              description: グループID
+            title:
+              type: string
+              x-stoplight:
+                id: ilrft4y4crlhz
+              description: グループタイトル
+            url:
+              type: string
+              x-stoplight:
+                id: g6m8pbuhbjt4m
+              description: グループURL
+          required:
+            - id
+            - title
+            - url
+        address:
+          type: string
+          x-stoplight:
+            id: rq8hrkp4bohob
+          description: 開催場所
+        place:
+          type: string
+          x-stoplight:
+            id: lo92of8xi2r9a
+          description: 開催会場
+        lat:
+          type: number
+          x-stoplight:
+            id: odh0ccot6jvkc
+          format: double
+          description: 開催会場の緯度
+        lon:
+          type: number
+          x-stoplight:
+            id: o2895ywxzocd4
+          format: double
+          description: 開催会場の経度
+        accepted:
+          type: integer
+          x-stoplight:
+            id: hz9vtgfuqvnoz
+          description: 参加者数
+        waiting:
+          type: integer
+          x-stoplight:
+            id: xeuje7nq7xkiq
+          description: 補欠者数
+        updatedAt:
+          type: string
+          x-stoplight:
+            id: 8qmv8gr12k11j
+          format: date-time
+          description: イベント更新日時
+      required:
+        - id
+        - eventId
+        - title
+        - eventUrl
+        - startedAt
+        - endedAt
+        - limit
+        - address
+        - place
+        - lat
+        - lon
+        - accepted
+        - waiting
+        - updatedAt
+    Error:
+      title: Error
+      x-stoplight:
+        id: jq04omoiygmey
+      type: object
+      description: エラーモデル
+      properties:
+        message:
+          type: string
+          x-stoplight:
+            id: kihmp5c4z101y
+          description: エラーメッセージ
+        code:
+          type: integer
+          x-stoplight:
+            id: cebbs50jo2jg7
+          description: ステータスコード
+        details:
+          type: string
+          x-stoplight:
+            id: kemcjnm8n316s
+          description: エラーメッセージの詳細
+      required:
+        - message
+        - code
+        - details
   parameters:
-    connpass_event_id:
+    event_id:
       name: event_id
       in: query
       required: false
       schema:
         type: string
       description: イベント毎に割り当てられた番号
-    connpass_keyword_or:
-      name: keyword_or
+    keyword:
+      name: keyword
       in: query
       required: false
       schema:
         type: string
-      description: イベントのタイトル、キャッチ、概要、住所をOR条件部分一致で検索
-    connpass_keyword_and:
-      name: keyword_and
+      description: キーワード
+    search_method:
+      name: search_method
       in: query
       required: false
       schema:
         type: string
-      description: イベントのタイトル、キャッチ、概要、住所をAND条件部分一致で検索
-    connpass_limit:
-      name: limit
+      description: 検索条件（ORもしくはAND）
+    date:
+      name: date
       in: query
       required: false
       schema:
         type: string
-      description: 検索結果の最大出力データ数を指定
+      description: イベント開催日
   responses:
-    search-event:
-      description: search event response
+    search_event:
+      description: イベント検索apiのレスポンス
       content:
         application/json:
           schema:
             type: object
             properties:
-              results_returned:
+              resultsReturned:
                 type: number
                 x-stoplight:
                   id: zazrhglsrza1z
                 description: 含まれる検索結果の件数
+              events:
+                type: array
+                x-stoplight:
+                  id: 36obur4e35i6b
+                description: イベントリスト
+                items:
+                  $ref: '#/components/schemas/Event'
+                  x-stoplight:
+                    id: tnm7dsgypoq8c
             required:
-              - results_returned
+              - resultsReturned
+              - events
+          examples:
+            Example 1:
+              $ref: '#/components/examples/search_event'
       headers: {}
+    mypage:
+      description: mypage response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                x-stoplight:
+                  id: jiz30kmfi7vnx
+                description: 名前
+              image:
+                type: string
+                x-stoplight:
+                  id: dajnqgthd0twy
+                description: googleアカウントのアイコン画像
+              markedEvents:
+                x-stoplight:
+                  id: wljnvp04xd6o3
+                type: array
+                description: ブックマークしたイベント
+                items:
+                  $ref: '#/components/schemas/Event'
+                  x-stoplight:
+                    id: 5q2t1o35efwqe
+            required:
+              - name
+              - markedEvents
+          examples:
+            Example 1:
+              $ref: '#/components/examples/mypage'
+    400_bad_request:
+      description: 400 BadRequest response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/400_bad_request'
+    401_unauthorized:
+      description: 401 Unauthorized response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/401_unauthorized'
+    403_forbidden:
+      description: 403 Forbidden response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/403_forbidden'
+    404_not_found:
+      description: 404 Not Found response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/404_not_found'
+    500_internal_server_error:
+      description: 500 Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/500_internal_server_error'
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  examples:
+    search_event:
+      value:
+        resultsReturned: 100
+        events:
+          - id: 974c0a56-54d0-272e-d2c1-7069ab7d8927
+            eventId: 364
+            title: BPStudy#56
+            catch: 株式会社ビープラウドが主催するWeb系技術討論の会
+            description: 今回は「Python プロフェッショナル　プログラミング」執筆プロジェクトの継続的ビルドについて、お話しして頂きます。
+            eventUrl: 'https://connpass.com/event/364/'
+            startedAt: '2012-04-17T18:30:00+09:00'
+            endedAt: '2012-04-17T20:30:00+09:00'
+            limit: 80
+            eventType: participation
+            series:
+              id: 1
+              title: BPStudy
+              url: 'https://connpass.com/series/1/'
+            address: 東京都豊島区東池袋1-7-12
+            place: BPオフィス (日産ビルディング7F)
+            lat: 35.6802361
+            lon: 139.7013085
+            accepted: 80
+            waiting: 15
+            updatedAt: '2012-03-20T12:07:32+09:00'
+          - id: dd626d53-2cd4-f9eb-8c75-985667f5027b
+            eventId: 364
+            title: BPStudy#56
+            catch: 株式会社ビープラウドが主催するWeb系技術討論の会
+            description: 今回は「Python プロフェッショナル　プログラミング」執筆プロジェクトの継続的ビルドについて、お話しして頂きます。
+            eventUrl: 'https://connpass.com/event/364/'
+            startedAt: '2012-04-17T18:30:00+09:00'
+            endedAt: '2012-04-17T20:30:00+09:00'
+            limit: 80
+            eventType: participation
+            series:
+              id: 1
+              title: BPStudy
+              url: 'https://connpass.com/series/1/'
+            address: 東京都豊島区東池袋1-7-12
+            place: BPオフィス (日産ビルディング7F)
+            lat: 35.6802361
+            lon: 139.7013085
+            accepted: 80
+            waiting: 15
+            updatedAt: '2012-03-20T12:07:32+09:00'
+    mypage:
+      value:
+        name: takumi
+        image: tttttt
+        markedEvents:
+          - id: 974c0a56-54d0-272e-d2c1-7069ab7d8927
+            eventId: 364
+            title: BPStudy#56
+            catch: 株式会社ビープラウドが主催するWeb系技術討論の会
+            description: 今回は「Python プロフェッショナル　プログラミング」執筆プロジェクトの継続的ビルドについて、お話しして頂きます。
+            eventUrl: 'https://connpass.com/event/364/'
+            startedAt: '2012-04-17T18:30:00+09:00'
+            endedAt: '2012-04-17T20:30:00+09:00'
+            limit: 80
+            eventType: participation
+            series:
+              id: 1
+              title: BPStudy
+              url: 'https://connpass.com/series/1/'
+            address: 東京都豊島区東池袋1-7-12
+            place: BPオフィス (日産ビルディング7F)
+            lat: 35.6802361
+            lon: 139.7013085
+            accepted: 80
+            waiting: 15
+            updatedAt: '2012-03-20T12:07:32+09:00'
+          - id: dd626d53-2cd4-f9eb-8c75-985667f5027b
+            eventId: 364
+            title: BPStudy#56
+            catch: 株式会社ビープラウドが主催するWeb系技術討論の会
+            description: 今回は「Python プロフェッショナル　プログラミング」執筆プロジェクトの継続的ビルドについて、お話しして頂きます。
+            eventUrl: 'https://connpass.com/event/364/'
+            startedAt: '2012-04-17T18:30:00+09:00'
+            endedAt: '2012-04-17T20:30:00+09:00'
+            limit: 80
+            eventType: participation
+            series:
+              id: 1
+              title: BPStudy
+              url: 'https://connpass.com/series/1/'
+            address: 東京都豊島区東池袋1-7-12
+            place: BPオフィス (日産ビルディング7F)
+            lat: 35.6802361
+            lon: 139.7013085
+            accepted: 80
+            waiting: 15
+            updatedAt: '2012-03-20T12:07:32+09:00'
+    400_bad_request:
+      value:
+        message: BadRequest
+        code: 400
+        details: リクエストボディ eventId が正しい形式ではありません
+    bookmark:
+      value:
+        id: 974c0a56-54d0-272e-d2c1-7069ab7d8927
+    404_not_found:
+      value:
+        message: NotFound
+        code: 404
+        details: イベントID 12345 に対応するイベントが存在しません
+    403_forbidden:
+      value:
+        message: Forbidden
+        code: 403
+        details: リクエストボディ eventId が正しい形式ではありません
+    401_unauthorized:
+      value:
+        message: Unauthorized
+        code: 401
+        details: アクセストークンが無効です
+    500_internal_server_error:
+      value:
+        message: InternalServerError
+        code: 500
+        details: リクエスト処理中に予期しないエラーが発生しました
+  requestBodies:
+    bookmark:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                x-stoplight:
+                  id: a9c6hewpcb2sr
+                description: eventsテーブルのid
+            required:
+              - id
+          examples:
+            Example 1:
+              $ref: '#/components/examples/bookmark'
+      description: ブックマーク追加・削除
