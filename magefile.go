@@ -94,7 +94,7 @@ func getDatesUntilNextMonth(today time.Time) []string {
 }
 
 // DBに接続できるかテストする
-func DBConnect() error {
+func dBConnect() (*sql.DB, error) {
 	dbUser := "takumi"
 	dbPassword := "password"
 	dbName := "devlocator"
@@ -103,17 +103,15 @@ func DBConnect() error {
 	db, err := sql.Open("mysql", dbConn)
 	if err != nil {
 		fmt.Printf("database connection error: %v", err)
-		return err
+		return nil, err
 	}
-	defer db.Close()
 
 	if err := db.Ping(); err != nil {
 		fmt.Printf("ping err: %v", err)
-		return err
+		return nil, err
 	}
 
-	fmt.Println("connect to DB")
-	return nil
+	return db, nil
 }
 
 func getEvents(count int) (ConnpassApi, error) {
@@ -132,6 +130,29 @@ func getEvents(count int) (ConnpassApi, error) {
 	return connpassApi, nil
 }
 
+func insertEvent(db *sql.DB, event Event) error {
+	sqlStr := `
+		INSERT INTO events (
+			event_id,
+			title,
+			description
+		) values (?, ?, ?);
+	`
+
+	newEvent := Event{
+		EventId:     1,
+		Title:       "test",
+		Description: "test description",
+	}
+
+	_, err := db.Exec(sqlStr, newEvent.EventId, newEvent.Title, newEvent.Description)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
 // connpass apiからイベント情報の取得
 func EventDisplay() error {
 	connpassApi, err := getEvents(1)
@@ -139,6 +160,14 @@ func EventDisplay() error {
 		fmt.Println(err)
 		return err
 	}
+
+	db, err := dBConnect()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer db.Close()
+	insertEvent(db, connpassApi.Events[0])
 
 	fmt.Printf("event: %s", connpassApi.Events[0].Title)
 	return nil
