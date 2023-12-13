@@ -3,7 +3,9 @@ module devlocator
 go 1.21
 
 require (
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/labstack/echo/v4 v4.11.3
+	github.com/magefile/mage v1.15.0
 	github.com/magiconair/properties v1.8.7
 	github.com/oapi-codegen/runtime v1.1.0
 )
