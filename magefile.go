@@ -4,6 +4,8 @@ package main
 
 import (
 	"database/sql"
+	"devlocator/database"
+	"devlocator/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,54 +18,80 @@ import (
 	"github.com/magefile/mage/mg" // mg contains helpful utility functions, like Deps
 )
 
-type ConnpassApi struct {
-	ResultsStart     int     `json:"results_start"`
-	ResultsReturned  int     `json:"results_returned"`
-	ResultsAvailable int     `json:"results_available"`
-	Events           []Event `json:"events"`
-}
-
-type Event struct {
-	EventId          int    `json:"event_id"`
-	Title            string `json:"title"`
-	Catch            string `json:"catch"`
-	Description      string `json:"description"`
-	EventUrl         string `json:"event_url"`
-	StartedAt        string `json:"started_at"`
-	EndedAt          string `json:"ended_at"`
-	Limit            int    `json:"limit"`
-	HashTag          string `json:"hash_tag"`
-	EventType        string `json:"event_target"`
-	Accepted         int    `json:"accepted"`
-	Waiting          int    `json:"waiting"`
-	UpdatedAt        string `json:"updated_at"`
-	OwnerId          int    `json:"owner_id"`
-	OwnerNickname    string `json:"owner_nickname"`
-	OwnerDisplayName string `json:"owner_display_name"`
-	Place            string `json:"place"`
-	Address          string `json:"address"`
-	Lat              string `json:"lat"`
-	Lon              string `json:"lon"`
-	Series           Series `json:"series"`
-}
-
-type Series struct {
-	Id    int    `json:"id"`
-	Title string `json:"title"`
-	Url   string `json:"url"`
-}
+const (
+	MAX_EVENTS_PER_REQUEST   = 10
+	EVENT_INDEX_INCREMENT    = 10
+	REQUEST_INTERVAL_SECONDS = 6
+)
 
 // Default target to run when none is specified
 // If not set, running mage will list available targets
 // var Default = Build
 
-// バッチ処理のテスト
-func BatchTest() error {
+// 日付処理のテスト
+func DatesTest() error {
 	today := time.Now()
-	testDate := time.Date(2024, 3, 1, 0, 0, 0, 0, today.Location())
+	testDate := time.Date(2023, 12, 17, 0, 0, 0, 0, today.Location())
 
 	dates := getDatesUntilNextMonth(testDate)
 	fmt.Println(dates)
+	return nil
+}
+
+// イベント情報登録バッチテスト
+func EventsBatchTest() error {
+	// 1ヶ月分の日付を取得する処理
+	// dates := getDatesUntilNextMonth(time.Now())
+	// stringDates := strings.Join(dates, ",")
+
+	db, err := database.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
+	if err := deleteEvents(tx); err != nil {
+		return err
+	}
+
+	startIndex := 1
+	beforeRequestTime := time.Now()
+	for {
+		d := (time.Now()).Sub(beforeRequestTime)
+		fmt.Printf("time duration: %v\n", d)
+		// TODO: 本番は日付をdatesStringに置き換える
+		eventsResponse, err := getEvents("20231201", startIndex, MAX_EVENTS_PER_REQUEST)
+		if err != nil {
+			return err
+		}
+
+		if len(eventsResponse.Events) == 0 {
+			break
+		}
+
+		if err := insertEvents(tx, eventsResponse.Events); err != nil {
+			return err
+		}
+
+		startIndex += EVENT_INDEX_INCREMENT
+		time.Sleep(REQUEST_INTERVAL_SECONDS * time.Second)
+	}
+
 	return nil
 }
 
@@ -71,7 +99,7 @@ func BatchTest() error {
 func getDatesUntilNextMonth(today time.Time) []string {
 	currentYear, currentMonth, currentDay := today.Date()
 
-	// 翌月の最終日を求める（現在が12とする）
+	// 翌月の最終日を求める
 	nextMonthTime := time.Date(currentYear, currentMonth+2, 1, 0, 0, 0, 0, today.Location()).AddDate(0, 0, -1)
 	nextYear := nextMonthTime.Year()
 	nextMonth := nextMonthTime.Month()
@@ -93,83 +121,84 @@ func getDatesUntilNextMonth(today time.Time) []string {
 	return dates
 }
 
-// DBに接続できるかテストする
-func dBConnect() (*sql.DB, error) {
-	dbUser := "takumi"
-	dbPassword := "password"
-	dbName := "devlocator"
-	dbConn := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3307)/%s?parseTime=true", dbUser, dbPassword, dbName)
-
-	db, err := sql.Open("mysql", dbConn)
-	if err != nil {
-		fmt.Printf("database connection error: %v", err)
-		return nil, err
-	}
-
-	if err := db.Ping(); err != nil {
-		fmt.Printf("ping err: %v", err)
-		return nil, err
-	}
-
-	return db, nil
-}
-
-func getEvents(count int) (ConnpassApi, error) {
-	url := fmt.Sprintf("https://connpass.com/api/v1/event?count=%d", count)
+// 引数
+// count - 取得件数
+// date - イベント日付
+// start - 検索開始位置
+func getEvents(date string, startIndex int, count int) (models.EventsResponse, error) {
+	url := fmt.Sprintf("https://connpass.com/api/v1/event?count=%d&start=%d&ymd=%s", count, startIndex, date)
 	res, err := http.Get(url)
 	if err != nil {
-		return ConnpassApi{}, fmt.Errorf("api request failed: %v", err)
+		return models.EventsResponse{}, err
 	}
 	defer res.Body.Close()
 
-	var connpassApi ConnpassApi
+	var connpassApi models.EventsResponse
 	if err := json.NewDecoder(res.Body).Decode(&connpassApi); err != nil {
-		return ConnpassApi{}, fmt.Errorf("response decode failed: %v", err)
+		return models.EventsResponse{}, err
 	}
+
+	// オフラインのみのイベント情報を取得するため
+	// 経度と緯度を判定
+	var filteredEvents []models.Event
+	for _, event := range connpassApi.Events {
+		if event.Lat != "" && event.Lon != "" {
+			filteredEvents = append(filteredEvents, event)
+		}
+	}
+	connpassApi.Events = filteredEvents
 
 	return connpassApi, nil
 }
 
-func insertEvent(db *sql.DB, event Event) error {
-	sqlStr := `
-		INSERT INTO events (
-			event_id,
-			title,
-			description
-		) values (?, ?, ?);
-	`
-
-	newEvent := Event{
-		EventId:     1,
-		Title:       "test",
-		Description: "test description",
-	}
-
-	_, err := db.Exec(sqlStr, newEvent.EventId, newEvent.Title, newEvent.Description)
-	if err != nil {
-		fmt.Println(err)
+func deleteEvents(tx *sql.Tx) error {
+	sqlStr := `DELETE FROM events;`
+	if _, err := tx.Exec(sqlStr); err != nil {
 		return err
 	}
 	return nil
 }
 
-// connpass apiからイベント情報の取得
-func EventDisplay() error {
-	connpassApi, err := getEvents(1)
+func insertEvents(tx *sql.Tx, events []models.Event) error {
+	sqlStr := `
+		INSERT INTO events (
+			event_id,
+			title,
+			catch,
+			description,
+			event_url,
+			started_at,
+			ended_at,
+			` + "`limit`" + `,
+			hash_tag,
+			event_type,
+			accepted,
+			waiting,
+			owner_id,
+			owner_nickname,
+			owner_display_name,
+			place,
+			address,
+			lat,
+			lon
+		) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+	`
+	stmt, err := tx.Prepare(sqlStr)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
+	defer stmt.Close()
 
-	db, err := dBConnect()
-	if err != nil {
-		fmt.Println(err)
-		return err
+	for _, e := range events {
+		if _, err := stmt.Exec(
+			e.EventId, e.Title, e.Catch, e.Description, e.EventUrl, e.StartedAt,
+			e.EndedAt, e.Limit, e.HashTag, e.EventType, e.Accepted, e.Waiting,
+			e.OwnerId, e.OwnerNickname, e.OwnerDisplayName, e.Place, e.Address, e.Lat, e.Lon,
+		); err != nil {
+			return err
+		}
 	}
-	defer db.Close()
-	insertEvent(db, connpassApi.Events[0])
 
-	fmt.Printf("event: %s", connpassApi.Events[0].Title)
 	return nil
 }
 

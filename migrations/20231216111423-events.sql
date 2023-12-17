@@ -19,8 +19,8 @@ CREATE TABLE events (
   owner_display_name VARCHAR(255),
   place VARCHAR(255),
   address VARCHAR(255),
-  lat FLOAT NOT NULL,
-  lon FLOAT NOT NULL
+  lat VARCHAR(255) NOT NULL,
+  lon VARCHAR(255) NOT NULL
 );
 
 -- +migrate Down

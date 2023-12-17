@@ -1,5 +1,10 @@
 package models
 
+type EventsResponse struct {
+	ResultsReturned int     `json:"results_returned"`
+	Events          []Event `json:"events"`
+}
+
 type Event struct {
 	EventId          int    `json:"event_id"`
 	Title            string `json:"title"`
