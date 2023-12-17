@@ -1,5 +1,14 @@
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
+destroy:
+	docker compose down --rmi all --volumes
+
 db-connect:
-	mysql -u root -P 3307 -p -h 127.0.0.1
+	mysql -u takumi -P 3307 -p -h 127.0.0.1 devlocator
 
 server-gen:
 	oapi-codegen -generate "server" -package openapi  reference/devlocator.yaml > ./gen/server.gen.go

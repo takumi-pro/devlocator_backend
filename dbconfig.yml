@@ -1,0 +1,4 @@
+development:
+    dialect: mysql
+    datasource: takumi:password@tcp(127.0.0.1:3307)/devlocator?parseTime=true
+    dir: migrations
