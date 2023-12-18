@@ -1,14 +1,14 @@
 name: go-ci
 on:
   pull_request:
-    branches: [main]
+    branches: [main,develop]
     paths:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
       - '.github/workflows/**'
   push:
-    branches: [main]
+    branches: [main,develop]
     paths:
       - '**.go'
       - 'go.mod'
