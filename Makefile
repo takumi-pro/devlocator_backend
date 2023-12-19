@@ -11,10 +11,10 @@ db-connect:
 	mysql -u takumi -P 3307 -p -h 127.0.0.1 devlocator
 
 server-gen:
-	oapi-codegen -generate "server" -package openapi  reference/devlocator.yaml > ./gen/server.gen.go
+	oapi-codegen -generate "server" -package openapi  reference/devlocator.yaml > ./openapi/server.gen.go
 
 types-gen:
-	oapi-codegen -generate "server" -package openapi  reference/devlocator.yaml > ./gen/types.gen.go
+	oapi-codegen -generate "types" -package openapi  reference/devlocator.yaml > ./openapi/types.gen.go
 
 # schema spy container
 spy-up:

@@ -30,6 +30,12 @@ func (s Server) PutApiEventBookmark(ctx echo.Context) error {
 	})
 }
 
+func (s Server) GetApiEventsEventId(ctx echo.Context, eventId string) error {
+	return ctx.JSON(http.StatusOK, TestResponse{
+		Message: "detail event",
+	})
+}
+
 func main() {
 	e := echo.New()
 	s := Server{}
