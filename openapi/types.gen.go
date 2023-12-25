@@ -110,18 +110,6 @@ type DetailEvent struct {
 	ResultsReturned int     `json:"resultsReturned"`
 }
 
-// Mypage defines model for mypage.
-type Mypage struct {
-	// Image googleアカウントのアイコン画像
-	Image *string `json:"image,omitempty"`
-
-	// MarkedEvents ブックマークしたイベント
-	MarkedEvents []Event `json:"markedEvents"`
-
-	// Name 名前
-	Name string `json:"name"`
-}
-
 // SearchEvent defines model for search_event.
 type SearchEvent struct {
 	// Events イベントリスト
@@ -146,14 +134,22 @@ type SearchEvent struct {
 	ResultsReturned int `json:"resultsReturned"`
 }
 
-// Bookmark defines model for bookmark.
-type Bookmark struct {
-	// Id eventsテーブルのid
-	Id string `json:"id"`
+// Users defines model for users.
+type Users struct {
+	FirebaseUid string `json:"firebaseUid"`
+
+	// Image googleアカウントのアイコン画像
+	Image *string `json:"image,omitempty"`
+
+	// MarkedEvents ブックマークしたイベント
+	MarkedEvents []Event `json:"markedEvents"`
+
+	// Name 名前
+	Name string `json:"name"`
 }
 
-// PutApiEventBookmarkJSONBody defines parameters for PutApiEventBookmark.
-type PutApiEventBookmarkJSONBody struct {
+// Bookmark defines model for bookmark.
+type Bookmark struct {
 	// Id eventsテーブルのid
 	Id string `json:"id"`
 }
@@ -173,10 +169,10 @@ type GetApiEventParams struct {
 	Date *Date `form:"date,omitempty" json:"date,omitempty"`
 }
 
-// GetApiMypageParams defines parameters for GetApiMypage.
-type GetApiMypageParams struct {
-	// Authorization Bearerトークンを受け取る
-	Authorization *string `json:"Authorization,omitempty"`
+// PutApiEventBookmarkJSONBody defines parameters for PutApiEventBookmark.
+type PutApiEventBookmarkJSONBody struct {
+	// Id eventsテーブルのid
+	Id string `json:"id"`
 }
 
 // PutApiEventBookmarkJSONRequestBody defines body for PutApiEventBookmark for application/json ContentType.

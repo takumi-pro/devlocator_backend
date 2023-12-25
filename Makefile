@@ -16,6 +16,12 @@ server-gen:
 types-gen:
 	oapi-codegen -generate "types" -package openapi  reference/devlocator.yaml > ./openapi/types.gen.go
 
+prod-build:
+	docker build -t devlocator:latest --target production -f docker/golang/Dockerfile .
+
+prod-run:
+	docker container run --name devlocator devlocator
+
 # schema spy container
 spy-up:
 	docker compose -f docker-compose-spy.yml up --build --force-recreate spy

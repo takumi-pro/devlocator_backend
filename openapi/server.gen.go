@@ -13,34 +13,23 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// bookmark
-	// (PUT /api/event/bookmark)
-	PutApiEventBookmark(ctx echo.Context) error
 	// search events
 	// (GET /api/events)
 	GetApiEvent(ctx echo.Context, params GetApiEventParams) error
+	// bookmark
+	// (PUT /api/events/bookmark)
+	PutApiEventBookmark(ctx echo.Context) error
 	// detail event
 	// (GET /api/events/{eventId})
 	GetApiEventsEventId(ctx echo.Context, eventId string) error
-	// get mypage
-	// (GET /api/mypage)
-	GetApiMypage(ctx echo.Context, params GetApiMypageParams) error
+	// get users
+	// (GET /api/users)
+	GetApiUsers(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
-}
-
-// PutApiEventBookmark converts echo context to params.
-func (w *ServerInterfaceWrapper) PutApiEventBookmark(ctx echo.Context) error {
-	var err error
-
-	ctx.Set(BearerScopes, []string{})
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutApiEventBookmark(ctx)
-	return err
 }
 
 // GetApiEvent converts echo context to params.
@@ -82,6 +71,17 @@ func (w *ServerInterfaceWrapper) GetApiEvent(ctx echo.Context) error {
 	return err
 }
 
+// PutApiEventBookmark converts echo context to params.
+func (w *ServerInterfaceWrapper) PutApiEventBookmark(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PutApiEventBookmark(ctx)
+	return err
+}
+
 // GetApiEventsEventId converts echo context to params.
 func (w *ServerInterfaceWrapper) GetApiEventsEventId(ctx echo.Context) error {
 	var err error
@@ -98,34 +98,12 @@ func (w *ServerInterfaceWrapper) GetApiEventsEventId(ctx echo.Context) error {
 	return err
 }
 
-// GetApiMypage converts echo context to params.
-func (w *ServerInterfaceWrapper) GetApiMypage(ctx echo.Context) error {
+// GetApiUsers converts echo context to params.
+func (w *ServerInterfaceWrapper) GetApiUsers(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BearerScopes, []string{})
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetApiMypageParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "Authorization" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, valueList[0], &Authorization)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
-		}
-
-		params.Authorization = &Authorization
-	}
-
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetApiMypage(ctx, params)
+	err = w.Handler.GetApiUsers(ctx)
 	return err
 }
 
@@ -157,9 +135,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.PUT(baseURL+"/api/event/bookmark", wrapper.PutApiEventBookmark)
 	router.GET(baseURL+"/api/events", wrapper.GetApiEvent)
+	router.PUT(baseURL+"/api/events/bookmark", wrapper.PutApiEventBookmark)
 	router.GET(baseURL+"/api/events/:eventId", wrapper.GetApiEventsEventId)
-	router.GET(baseURL+"/api/mypage", wrapper.GetApiMypage)
+	router.GET(baseURL+"/api/users", wrapper.GetApiUsers)
 
 }
