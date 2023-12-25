@@ -37,37 +37,7 @@ paths:
       tags:
         - event
     parameters: []
-  /api/mypage:
-    get:
-      summary: get mypage
-      tags:
-        - mypage
-      responses:
-        '200':
-          $ref: '#/components/responses/mypage'
-        '400':
-          $ref: '#/components/responses/400_bad_request'
-        '401':
-          $ref: '#/components/responses/401_unauthorized'
-        '403':
-          $ref: '#/components/responses/403_forbidden'
-        '404':
-          $ref: '#/components/responses/404_not_found'
-        '500':
-          $ref: '#/components/responses/500_internal_server_error'
-      operationId: get-api-mypage
-      x-stoplight:
-        id: dcu57sqlbs536
-      description: マイページ情報の取得
-      security:
-        - bearer: []
-      parameters:
-        - schema:
-            type: string
-          in: header
-          name: Authorization
-          description: Bearerトークンを受け取る
-  /api/event/bookmark:
+  /api/events/bookmark:
     put:
       summary: bookmark
       operationId: put-api-event-bookmark
@@ -93,6 +63,7 @@ paths:
         $ref: '#/components/requestBodies/bookmark'
       tags:
         - event
+    parameters: []
   '/api/events/{eventId}':
     parameters:
       - schema:
@@ -120,6 +91,29 @@ paths:
       x-stoplight:
         id: 2r1tqyrpcdnj5
       description: イベント詳細取得
+  /api/users:
+    get:
+      summary: get users
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/users'
+        '400':
+          $ref: '#/components/responses/400_bad_request'
+        '401':
+          $ref: '#/components/responses/401_unauthorized'
+        '403':
+          $ref: '#/components/responses/403_forbidden'
+        '404':
+          $ref: '#/components/responses/404_not_found'
+        '500':
+          $ref: '#/components/responses/500_internal_server_error'
+      operationId: get-api-users
+      x-stoplight:
+        id: 4adk0339fef3x
+      description: |-
+        ユーザ情報取得
+        ユーザがブックマークしたイベント情報も取得？
 components:
   schemas:
     Event:
@@ -366,8 +360,8 @@ components:
             Example 1:
               $ref: '#/components/examples/search_event'
       headers: {}
-    mypage:
-      description: mypage response
+    users:
+      description: ユーザ情報レスポンス
       content:
         application/json:
           schema:
@@ -392,12 +386,17 @@ components:
                   $ref: '#/components/schemas/Event'
                   x-stoplight:
                     id: 1965imic8ms7a
+              firebaseUid:
+                type: string
+                x-stoplight:
+                  id: f1gi2lmyi7556
             required:
               - name
               - markedEvents
+              - firebaseUid
           examples:
             Example 1:
-              $ref: '#/components/examples/mypage'
+              $ref: '#/components/examples/users'
     400_bad_request:
       description: 400 BadRequest response
       content:
@@ -506,10 +505,11 @@ components:
             accepted: 80
             waiting: 15
             updatedAt: '2012-03-20T12:07:32+09:00'
-    mypage:
+    users:
       value:
         name: takumi
         image: tttttt
+        firebaseUid: 1fsdfsdfsdfsdf
         markedEvents:
           - id: 974c0a56-54d0-272e-d2c1-7069ab7d8927
             eventId: 364
