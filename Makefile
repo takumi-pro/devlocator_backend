@@ -1,3 +1,21 @@
+# GCP setting
+IMAGE=asia-northeast1-docker.pkg.dev/sigma-method-409207/devlocator-app/devlocator
+
+add-tag:
+	docker image tag devlocator $(IMAGE):latest
+
+image-push:
+	docker image push $(IMAGE):latest
+
+deploy:
+	gcloud run deploy devlocator \
+	--image $(IMAGE) \
+	--port 8000 \
+	--platform=managed \
+	--allow-unauthenticated \
+	--region asia-northeast1
+
+# docker
 up:
 	docker compose up -d
 
@@ -17,7 +35,7 @@ types-gen:
 	oapi-codegen -generate "types" -package openapi  reference/devlocator.yaml > ./openapi/types.gen.go
 
 prod-build:
-	docker build -t devlocator:latest --target production -f docker/golang/Dockerfile .
+	docker build -t devlocator:latest --target production --platform linux/amd64 -f docker/golang/Dockerfile .
 
 prod-run:
 	docker container run --name devlocator devlocator
