@@ -3,6 +3,7 @@ package main
 import (
 	"devlocator/openapi"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,21 +19,29 @@ func (s Server) GetApiEvent(ctx echo.Context, params openapi.GetApiEventParams) 
 	})
 }
 
-func (s Server) GetApiMypage(ctx echo.Context, params openapi.GetApiMypageParams) error {
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "mypage",
-	})
-}
-
 func (s Server) PutApiEventBookmark(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, TestResponse{
 		Message: "mypage",
 	})
 }
 
+func (s Server) GetApiEventsEventId(ctx echo.Context, eventId string) error {
+	return ctx.JSON(http.StatusOK, TestResponse{
+		Message: "detail event",
+	})
+}
+
+func (s Server) GetApiUsers(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, TestResponse{
+		Message: "users",
+	})
+}
+
 func main() {
+	port := os.Getenv("PORT")
+
 	e := echo.New()
 	s := Server{}
 	openapi.RegisterHandlers(e, s)
-	e.Logger.Fatal(e.Start(":8000"))
+	e.Logger.Fatal(e.Start(":" + port))
 }

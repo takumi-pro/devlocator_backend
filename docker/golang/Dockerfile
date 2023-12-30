@@ -33,6 +33,8 @@ FROM gcr.io/distroless/base-debian11 AS production
 
 WORKDIR /go/src/app
 
+EXPOSE 8000
+
 COPY --from=build /main /main
 
 ENTRYPOINT ["/main"]

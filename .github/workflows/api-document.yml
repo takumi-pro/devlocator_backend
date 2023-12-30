@@ -5,6 +5,10 @@ on:
     branches: [develop]
     paths:
       - "reference/devlocator.yaml"
+  push:
+    branches: [develop]
+    paths:
+      - "reference/devlocator.yaml"
   workflow_dispatch:
 
 jobs:
