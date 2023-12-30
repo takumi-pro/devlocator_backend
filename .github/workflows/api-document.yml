@@ -2,11 +2,11 @@ name: API Document Hosting
 
 on:
   pull_request:
-    branches: [develop]
+    branches: [main]
     paths:
       - "reference/devlocator.yaml"
   push:
-    branches: [develop]
+    branches: [main]
     paths:
       - "reference/devlocator.yaml"
   workflow_dispatch:
