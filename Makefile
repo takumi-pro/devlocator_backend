@@ -1,6 +1,9 @@
 # GCP setting
 IMAGE=asia-northeast1-docker.pkg.dev/sigma-method-409207/devlocator-app/devlocator
 
+image-build:
+	docker image build -t $(IMAGE):latest --target production --platform linux/amd64 -f docker/golang/Dockerfile .
+	
 add-tag:
 	docker image tag devlocator $(IMAGE):latest
 
