@@ -39,6 +39,9 @@ jobs:
           workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions-oidc/providers/github-actions-oidc-provider"
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
+      - name: Configure Docker
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+
       - name: Build image
         run: docker image build -t asia-northeast1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/devlocator-app/devlocator:latest --target production --platform linux/amd64 -f docker/golang/Dockerfile .
       
