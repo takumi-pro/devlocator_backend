@@ -1,16 +1,17 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-func DBConnect() (*sql.DB, error) {
+func DBConnectGorm() (db *gorm.DB, err error) {
 	// TODO: 環境変数から取得
-	err := godotenv.Load(".env")
+	err = godotenv.Load(".env")
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
@@ -28,14 +29,12 @@ func DBConnect() (*sql.DB, error) {
 		dbName,
 	)
 
-	db, err := sql.Open("mysql", dbConn)
+	db, err = gorm.Open(mysql.Open(dbConn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
+	fmt.Println("Database connected!")
 
 	return db, nil
 }

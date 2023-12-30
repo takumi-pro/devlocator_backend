@@ -1,6 +1,7 @@
 package main
 
 import (
+	"devlocator/database"
 	"devlocator/openapi"
 	"net/http"
 	"os"
@@ -34,6 +35,18 @@ func (s Server) GetApiEventsEventId(ctx echo.Context, eventId string) error {
 func (s Server) GetApiUsers(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, TestResponse{
 		Message: "users",
+	})
+}
+
+func (s Server) DBConnect(ctx echo.Context) error {
+	_, err := database.DBConnectGorm()
+	var message = "database connected!"
+	if err != nil {
+		message = err.Error()
+	}
+
+	return ctx.JSON(http.StatusOK, TestResponse{
+		Message: message,
 	})
 }
 

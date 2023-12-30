@@ -12,6 +12,7 @@ permissions:
 
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: asia-northeast1
 
 jobs:
   build:
@@ -40,10 +41,18 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
       - name: Configure Docker
-        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
       - name: Build image
-        run: docker image build -t asia-northeast1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/devlocator-app/devlocator:latest --target production --platform linux/amd64 -f docker/golang/Dockerfile .
+        run: docker image build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/devlocator-app/devlocator:latest --target production --platform linux/amd64 -f docker/golang/Dockerfile .
       
       - name: Push image
-        run: docker image push asia-northeast1-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/devlocator-app/devlocator:latest
+        run: docker image push ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/devlocator-app/devlocator:latest
+      
+      - name: Deploy to Cloud Run
+        run: |-
+          gcloud run deploy devlocator \
+          --image ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/devlocator-app/devlocator:latest \
+          --platform=managed \
+          --allow-unauthenticated \
+          --region ${{ env.REGION }}

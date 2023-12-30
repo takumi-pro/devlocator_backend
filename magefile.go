@@ -38,6 +38,29 @@ func DatesTest() error {
 	return nil
 }
 
+func DBConnectGormTest() error {
+	_, err := database.DBConnectGorm()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DBConnectTest() error {
+	db, err := database.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if err = db.Ping(); err != nil {
+		return err
+	}
+
+	fmt.Println("db connect")
+	return nil
+}
+
 // イベント情報登録バッチテスト
 func EventsBatchTest() error {
 	// 1ヶ月分の日付を取得する処理

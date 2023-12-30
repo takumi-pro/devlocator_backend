@@ -25,6 +25,8 @@ type ServerInterface interface {
 	// get users
 	// (GET /api/users)
 	GetApiUsers(ctx echo.Context) error
+
+	DBConnect(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -140,4 +142,5 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/events/:eventId", wrapper.GetApiEventsEventId)
 	router.GET(baseURL+"/api/users", wrapper.GetApiUsers)
 
+	router.GET(baseURL+"/db-connect", wrapper.Handler.DBConnect)
 }
