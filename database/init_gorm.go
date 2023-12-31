@@ -19,14 +19,16 @@ func DBConnectGorm() (db *gorm.DB, err error) {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 	dbPort := os.Getenv("DB_PORT")
-	dbHost := "127.0.0.1"
+	dbHost := os.Getenv("DB_HOST")
+	dbTls := os.Getenv("DB_TLS")
 	dbConn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s&interpolateParams=true",
 		dbUser,
 		dbPassword,
 		dbHost,
 		dbPort,
 		dbName,
+		dbTls,
 	)
 
 	db, err = gorm.Open(mysql.Open(dbConn), &gorm.Config{})

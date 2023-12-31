@@ -16,7 +16,7 @@ type TestResponse struct {
 
 func (s Server) GetApiEvent(ctx echo.Context, params openapi.GetApiEventParams) error {
 	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "search events",
+		Message: "get events",
 	})
 }
 

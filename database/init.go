@@ -18,9 +18,9 @@ func DBConnect() (*sql.DB, error) {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 	dbPort := os.Getenv("DB_PORT")
-	dbHost := "127.0.0.1"
+	dbHost := os.Getenv("DB_HOST")
 	dbConn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=true&interpolateParams=true",
 		dbUser,
 		dbPassword,
 		dbHost,
