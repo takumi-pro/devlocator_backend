@@ -1,14 +1,10 @@
 name: API Document Hosting
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "reference/devlocator.yaml"
   push:
     branches: [main]
-    paths:
-      - "reference/devlocator.yaml"
+    # paths:
+      # - "reference/devlocator.yaml"
   workflow_dispatch:
 
 jobs:
@@ -17,21 +13,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Convert YML to HTML
         run: |
           npm install -g redoc-cli
-          redoc-cli bundle reference/devlocator.yaml -o ./index.html
-
-      - name: Deploy to Hosting PC
-        uses: appleboy/scp-action@v0.1.4
+          redoc-cli bundle reference/devlocator.yaml -o ./docs/index.html
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          key: ${{ secrets.KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-          source: "index.html"
-          target: "/var/www/html/api"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+
+      # - name: Deploy to Hosting PC
+      #   uses: appleboy/scp-action@v0.1.4
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     password: ${{ secrets.PASSWORD }}
+      #     port: ${{ secrets.PORT }}
+      #     key: ${{ secrets.KEY }}
+      #     passphrase: ${{ secrets.PASSPHRASE }}
+      #     source: "index.html"
+      #     target: "/var/www/html/api"
