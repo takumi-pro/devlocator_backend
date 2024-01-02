@@ -33,6 +33,7 @@ paths:
         - $ref: '#/components/parameters/keyword'
         - $ref: '#/components/parameters/search_method'
         - $ref: '#/components/parameters/date'
+        - $ref: '#/components/parameters/prefecture'
       description: イベント検索
       tags:
         - event
@@ -269,6 +270,13 @@ components:
       schema:
         type: string
       description: イベント開催日
+    prefecture:
+      name: prefecture
+      in: query
+      required: false
+      schema:
+        type: string
+      description: イベント開催都道府県
   responses:
     search_event:
       description: イベント検索apiのレスポンス
