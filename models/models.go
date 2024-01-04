@@ -1,32 +1,31 @@
 package models
 
 type EventsResponse struct {
-	ResultsReturned int     `json:"results_returned"`
+	ResultsReturned int64   `json:"results_returned"`
 	Events          []Event `json:"events"`
 }
 
 type Event struct {
-	EventId          int    `json:"event_id"`
+	EventId          int    `json:"event_id" gorm:"primaryKey"`
 	Title            string `json:"title"`
-	Catch            string `json:"catch"`
-	Description      string `json:"description"`
+	Catch            string `json:"catch,omitempty"`
+	Description      string `json:"description,omitempty"`
 	EventUrl         string `json:"event_url"`
 	StartedAt        string `json:"started_at"`
 	EndedAt          string `json:"ended_at"`
 	Limit            int    `json:"limit"`
-	HashTag          string `json:"hash_tag"`
-	EventType        string `json:"event_target"`
+	HashTag          string `json:"hash_tag,omitempty"`
+	EventType        string `json:"event_type,omitempty"`
 	Accepted         int    `json:"accepted"`
 	Waiting          int    `json:"waiting"`
 	UpdatedAt        string `json:"updated_at"`
-	OwnerId          int    `json:"owner_id"`
-	OwnerNickname    string `json:"owner_nickname"`
-	OwnerDisplayName string `json:"owner_display_name"`
+	OwnerId          int    `json:"owner_id,omitempty"`
+	OwnerNickname    string `json:"owner_nickname,omitempty"`
+	OwnerDisplayName string `json:"owner_display_name,omitempty"`
 	Place            string `json:"place"`
 	Address          string `json:"address"`
 	Lat              string `json:"lat"`
 	Lon              string `json:"lon"`
-	Series           Series `json:"series"`
 }
 
 type Series struct {
