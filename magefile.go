@@ -63,42 +63,27 @@ func DBConnectTest() error {
 
 // イベント情報登録バッチテスト
 func EventsBatchTest() error {
-	// 1ヶ月分の日付を取得する処理
 	// dates := getDatesUntilNextMonth(time.Now())
 	// stringDates := strings.Join(dates, ",")
 
 	db, err := database.DBConnect()
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 	defer db.Close()
 
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p)
-		} else if err != nil {
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
-		}
-	}()
-
-	if err := deleteEvents(tx); err != nil {
+	if err := deleteEventsTransaction(db); err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 
-	startIndex := 1
 	beforeRequestTime := time.Now()
+	startIndex := 1
 	for {
-		d := (time.Now()).Sub(beforeRequestTime)
+		d := (time.Now()).Sub(beforeRequestTime).Seconds()
 		fmt.Printf("time duration: %v\n", d)
-		// TODO: 本番は日付をdatesStringに置き換える
-		eventsResponse, err := getEvents("20231201", startIndex, MAX_EVENTS_PER_REQUEST)
+		eventsResponse, err := getEvents("20240104", startIndex, MAX_EVENTS_PER_REQUEST)
 		if err != nil {
 			return err
 		}
@@ -107,7 +92,7 @@ func EventsBatchTest() error {
 			break
 		}
 
-		if err := insertEvents(tx, eventsResponse.Events); err != nil {
+		if err := insertEventsTransaction(db, eventsResponse.Events); err != nil {
 			return err
 		}
 
@@ -174,12 +159,41 @@ func getEvents(date string, startIndex int, count int) (models.EventsResponse, e
 	return connpassApi, nil
 }
 
+func deleteEventsTransaction(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := deleteEvents(tx); err != nil {
+		return err
+	}
+
+	fmt.Println("deleted!")
+	return tx.Commit()
+}
+
 func deleteEvents(tx *sql.Tx) error {
 	sqlStr := `DELETE FROM events;`
 	if _, err := tx.Exec(sqlStr); err != nil {
 		return err
 	}
 	return nil
+}
+
+func insertEventsTransaction(db *sql.DB, events []models.Event) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := insertEvents(tx, events); err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func insertEvents(tx *sql.Tx, events []models.Event) error {
