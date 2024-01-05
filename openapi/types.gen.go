@@ -85,6 +85,9 @@ type EventId = string
 // Keyword defines model for keyword.
 type Keyword = string
 
+// Prefecture defines model for prefecture.
+type Prefecture = string
+
 // SearchMethod defines model for search_method.
 type SearchMethod = string
 
@@ -167,6 +170,9 @@ type GetApiEventParams struct {
 
 	// Date イベント開催日
 	Date *Date `form:"date,omitempty" json:"date,omitempty"`
+
+	// Prefecture イベント開催都道府県
+	Prefecture *Prefecture `form:"prefecture,omitempty" json:"prefecture,omitempty"`
 }
 
 // PutApiEventBookmarkJSONBody defines parameters for PutApiEventBookmark.

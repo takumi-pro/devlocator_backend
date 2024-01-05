@@ -1,60 +1,55 @@
 package main
 
 import (
-	"devlocator/database"
+	"devlocator/handlers"
 	"devlocator/openapi"
-	"net/http"
+	"fmt"
 	"os"
+	"regexp"
+	"strings"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
 
-type Server struct{}
-type TestResponse struct {
-	Message string
+type CustomValidator struct {
+	validator *validator.Validate
 }
 
-func (s Server) GetApiEvent(ctx echo.Context, params openapi.GetApiEventParams) error {
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "get events & search",
-	})
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
 }
 
-func (s Server) PutApiEventBookmark(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "mypage",
-	})
-}
+func validateDateTime(fl validator.FieldLevel) bool {
+	// 日付の形式を正規表現でチェック
+	re := regexp.MustCompile(`^\d{4}(\d{2})(\d{2})$`)
+	// カンマで分割
+	dates := strings.Split(fl.Field().String(), ",")
 
-func (s Server) GetApiEventsEventId(ctx echo.Context, eventId string) error {
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "detail event",
-	})
-}
-
-func (s Server) GetApiUsers(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "users",
-	})
-}
-
-func (s Server) DBConnect(ctx echo.Context) error {
-	_, err := database.DBConnectGorm()
-	var message = "database connected!"
-	if err != nil {
-		message = err.Error()
+	// 分割された各日付に対してチェック
+	for _, date := range dates {
+		if !re.MatchString(date) {
+			return false
+		}
 	}
 
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: message,
-	})
+	return true
 }
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
 	port := os.Getenv("PORT")
 
 	e := echo.New()
-	s := Server{}
+	e.Validator = &CustomValidator{validator: validator.New()}
+	if err := e.Validator.(*CustomValidator).validator.RegisterValidation("datetime", validateDateTime); err != nil {
+		e.Logger.Fatal(err)
+	}
+	s := handlers.Server{}
 	openapi.RegisterHandlers(e, s)
 	e.Logger.Fatal(e.Start(":" + port))
 }

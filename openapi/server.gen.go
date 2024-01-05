@@ -25,8 +25,6 @@ type ServerInterface interface {
 	// get users
 	// (GET /api/users)
 	GetApiUsers(ctx echo.Context) error
-
-	DBConnect(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -66,6 +64,13 @@ func (w *ServerInterfaceWrapper) GetApiEvent(ctx echo.Context) error {
 	err = runtime.BindQueryParameter("form", true, false, "date", ctx.QueryParams(), &params.Date)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
+	}
+
+	// ------------- Optional query parameter "prefecture" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "prefecture", ctx.QueryParams(), &params.Prefecture)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter prefecture: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
@@ -142,5 +147,4 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/events/:eventId", wrapper.GetApiEventsEventId)
 	router.GET(baseURL+"/api/users", wrapper.GetApiUsers)
 
-	router.GET(baseURL+"/db-connect", wrapper.Handler.DBConnect)
 }
