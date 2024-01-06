@@ -4,6 +4,7 @@ import (
 	"devlocator/database"
 	"devlocator/handlers"
 	"devlocator/openapi"
+	"devlocator/repositories"
 	"fmt"
 	"os"
 	"regexp"
@@ -56,7 +57,8 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	s := handlers.Server{DB: db}
+	eventRepo := repositories.NewEventRepository(db)
+	s := handlers.Server{EventRepository: eventRepo}
 	openapi.RegisterHandlers(e, s)
 	e.Logger.Fatal(e.Start(":" + port))
 }

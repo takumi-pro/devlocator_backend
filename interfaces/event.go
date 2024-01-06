@@ -5,6 +5,7 @@ import (
 	"devlocator/openapi"
 )
 
-type EventRepository interface {
+type EventRepositoryInterface interface {
 	GetEvents(params openapi.GetApiEventParams) ([]models.Event, int64, error)
+	GetDetailEvent(eventId string) (models.Event, error)
 }

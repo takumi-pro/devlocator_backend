@@ -2,17 +2,16 @@ package handlers
 
 import (
 	"devlocator/database"
+	"devlocator/interfaces"
 	"devlocator/models"
 	"devlocator/openapi"
-	"devlocator/repositories"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 type Server struct {
-	DB *gorm.DB
+	EventRepository interfaces.EventRepositoryInterface
 }
 
 type TestResponse struct {
@@ -37,7 +36,7 @@ func (s Server) GetApiEvent(ctx echo.Context, params openapi.GetApiEventParams) 
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	events, count, err := repositories.NewEventRepository(s.DB).GetEvents(params)
+	events, count, err := s.EventRepository.GetEvents(params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -55,9 +54,16 @@ func (s Server) PutApiEventBookmark(ctx echo.Context) error {
 }
 
 func (s Server) GetApiEventsEventId(ctx echo.Context, eventId string) error {
-	return ctx.JSON(http.StatusOK, TestResponse{
-		Message: "detail event",
-	})
+	event, err := s.EventRepository.GetDetailEvent(eventId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	type EventDetailResponse struct {
+		Event models.Event `json:"event"`
+	}
+	var responseEvent = EventDetailResponse{Event: event}
+	return ctx.JSON(http.StatusOK, responseEvent)
 }
 
 func (s Server) GetApiUsers(ctx echo.Context) error {

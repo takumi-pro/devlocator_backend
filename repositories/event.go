@@ -12,12 +12,14 @@ type EventRepository struct {
 	db *gorm.DB
 }
 
-type EventRepositoryInterface interface {
-	GetEvents(openapi.GetApiEventParams) ([]models.Event, int64, error)
-}
-
 func NewEventRepository(db *gorm.DB) *EventRepository {
 	return &EventRepository{db: db}
+}
+
+func (repo *EventRepository) GetDetailEvent(eventId string) (models.Event, error) {
+	var event models.Event
+	result := repo.db.Model(&models.Event{}).Where("event_id = ?", eventId).First(&event)
+	return event, result.Error
 }
 
 func (repo *EventRepository) GetEvents(params openapi.GetApiEventParams) ([]models.Event, int64, error) {
