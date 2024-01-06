@@ -1,6 +1,7 @@
 package main
 
 import (
+	"devlocator/database"
 	"devlocator/handlers"
 	"devlocator/openapi"
 	"fmt"
@@ -49,7 +50,13 @@ func main() {
 	if err := e.Validator.(*CustomValidator).validator.RegisterValidation("datetime", validateDateTime); err != nil {
 		e.Logger.Fatal(err)
 	}
-	s := handlers.Server{}
+
+	db, err := database.DBConnectGorm()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	s := handlers.Server{DB: db}
 	openapi.RegisterHandlers(e, s)
 	e.Logger.Fatal(e.Start(":" + port))
 }
