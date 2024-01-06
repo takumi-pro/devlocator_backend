@@ -6,6 +6,8 @@ services:
       dockerfile: ./docker/golang/Dockerfile
       target: dev
     container_name: devlocator
+    depends_on:
+      - db
     volumes:
       - .:/go/src/app
     ports:
