@@ -7,7 +7,8 @@ services:
       target: dev
     container_name: devlocator
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - .:/go/src/app
     ports:
@@ -25,3 +26,8 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - 3307:3306
+    healthcheck:  # healthcheckの設定
+      test: mysqladmin ping -h 127.0.0.1 -u ${MYSQL_USER} -p ${MYSQL_PASSWORD}  # MySQLサーバーへのping
+      interval: 10s  # 10秒ごとにhealthcheckを実行
+      timeout: 5s   # healthcheckのタイムアウト時間
+      retries: 3     # 失敗時のリトライ回数
