@@ -17,16 +17,19 @@ func DBConnect() (*sql.DB, error) {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
-	dbPort := os.Getenv("DB_PORT")
-	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_MAGE_PORT")
+	dbHost := os.Getenv("DB_MAGE_HOST")
+	dbTls := os.Getenv("DB_TLS")
 	dbConn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=true&interpolateParams=true",
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s&interpolateParams=true",
 		dbUser,
 		dbPassword,
 		dbHost,
 		dbPort,
 		dbName,
+		dbTls,
 	)
+	fmt.Println(dbConn)
 
 	db, err := sql.Open("mysql", dbConn)
 	if err != nil {

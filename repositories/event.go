@@ -25,23 +25,32 @@ func (repo *EventRepository) GetDetailEvent(eventId string) (models.Event, error
 func (repo *EventRepository) GetEvents(params openapi.GetApiEventParams) ([]models.Event, int64, error) {
 	var events []models.Event
 	var count int64
-	eventResponseFields := []string{"event_id", "title", "event_url", "started_at", "ended_at", "limit", "accepted", "waiting", "updated_at", "place", "address", "lat", "lon"}
+	eventResponseFields := []string{"event_id", "title", "description", "event_url", "started_at", "ended_at", "limit", "accepted", "waiting", "updated_at", "place", "address", "lat", "lon"}
 
 	query := repo.db.Model(&events)
 
-	searchMethod := "and"
-	if params.SearchMethod != nil && *params.SearchMethod == "or" {
-		searchMethod = "or"
+	searchMethod := "or"
+	if params.SearchMethod != nil && *params.SearchMethod == "and" {
+		searchMethod = "and"
 	}
 
+	keywordCondition := repo.db
 	if params.Keyword != nil {
 		keywords := strings.Split(*params.Keyword, ",")
+		if searchMethod == "or" {
+			for _, keyword := range keywords {
+				keywordCondition = keywordCondition.Or("title LIKE ? OR description LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+			}
+		}
+
 		if searchMethod == "and" {
 			for _, keyword := range keywords {
-				query = query.Where("title LIKE ? OR description LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+				keywordCondition = keywordCondition.Where("title LIKE ? OR description LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
 			}
 		}
 	}
+
+	query = query.Where(keywordCondition)
 
 	if params.Date != nil {
 		dates := strings.Split(*params.Date, ",")

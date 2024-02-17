@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -19,9 +20,9 @@ import (
 )
 
 const (
-	MAX_EVENTS_PER_REQUEST   = 10
-	EVENT_INDEX_INCREMENT    = 10
-	REQUEST_INTERVAL_SECONDS = 6
+	MAX_EVENTS_PER_REQUEST   = 100
+	EVENT_INDEX_INCREMENT    = 100
+	REQUEST_INTERVAL_SECONDS = 7
 )
 
 // Default target to run when none is specified
@@ -31,7 +32,7 @@ const (
 // 日付処理のテスト
 func DatesTest() error {
 	today := time.Now()
-	testDate := time.Date(2023, 12, 17, 0, 0, 0, 0, today.Location())
+	testDate := time.Date(2024, 2, 3, 3, 30, 0, 0, today.Location())
 
 	dates := getDatesUntilNextMonth(testDate)
 	fmt.Println(dates)
@@ -63,8 +64,8 @@ func DBConnectTest() error {
 
 // イベント情報登録バッチテスト
 func EventsBatchTest() error {
-	// dates := getDatesUntilNextMonth(time.Now())
-	// stringDates := strings.Join(dates, ",")
+	dates := getDatesUntilNextMonth(time.Now())
+	stringDates := strings.Join(dates, ",")
 
 	db, err := database.DBConnect()
 	if err != nil {
@@ -83,7 +84,7 @@ func EventsBatchTest() error {
 	for {
 		d := (time.Now()).Sub(beforeRequestTime).Seconds()
 		fmt.Printf("time duration: %v\n", d)
-		eventsResponse, err := getEvents("20240104", startIndex, MAX_EVENTS_PER_REQUEST)
+		eventsResponse, err := getEvents(stringDates, startIndex, MAX_EVENTS_PER_REQUEST)
 		if err != nil {
 			return err
 		}
@@ -133,22 +134,22 @@ func getDatesUntilNextMonth(today time.Time) []string {
 // count - 取得件数
 // date - イベント日付
 // start - 検索開始位置
-func getEvents(date string, startIndex int, count int) (models.EventsResponse, error) {
+func getEvents(date string, startIndex int, count int) (models.DBEventsResponse, error) {
 	url := fmt.Sprintf("https://connpass.com/api/v1/event?count=%d&start=%d&ymd=%s", count, startIndex, date)
 	res, err := http.Get(url)
 	if err != nil {
-		return models.EventsResponse{}, err
+		return models.DBEventsResponse{}, err
 	}
 	defer res.Body.Close()
 
-	var connpassApi models.EventsResponse
+	var connpassApi models.DBEventsResponse
 	if err := json.NewDecoder(res.Body).Decode(&connpassApi); err != nil {
-		return models.EventsResponse{}, err
+		return models.DBEventsResponse{}, err
 	}
 
 	// オフラインのみのイベント情報を取得するため
 	// 経度と緯度を判定
-	var filteredEvents []models.Event
+	var filteredEvents []models.DBEvent
 	for _, event := range connpassApi.Events {
 		if event.Lat != "" && event.Lon != "" {
 			filteredEvents = append(filteredEvents, event)
@@ -182,7 +183,7 @@ func deleteEvents(tx *sql.Tx) error {
 	return nil
 }
 
-func insertEventsTransaction(db *sql.DB, events []models.Event) error {
+func insertEventsTransaction(db *sql.DB, events []models.DBEvent) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -196,7 +197,7 @@ func insertEventsTransaction(db *sql.DB, events []models.Event) error {
 	return tx.Commit()
 }
 
-func insertEvents(tx *sql.Tx, events []models.Event) error {
+func insertEvents(tx *sql.Tx, events []models.DBEvent) error {
 	sqlStr := `
 		INSERT INTO events (
 			event_id,
