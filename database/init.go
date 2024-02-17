@@ -29,7 +29,6 @@ func DBConnect() (*sql.DB, error) {
 		dbName,
 		dbTls,
 	)
-	fmt.Println(dbConn)
 
 	db, err := sql.Open("mysql", dbConn)
 	if err != nil {
